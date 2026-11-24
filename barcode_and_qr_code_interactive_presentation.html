@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Штрих-коды и QR-коды — Simple Light Презентация</title>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          boxShadow: {
+            'slide': '0 20px 40px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.06)',
+            'glow': '0 0 20px -3px rgba(99, 102, 241, 0.3)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Global custom resets & drawing canvas cursor */
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; user-select: none; }
+    canvas { touch-action: none; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="h-full w-full flex flex-col justify-between items-center bg-slate-100 overflow-hidden font-sans text-slate-800">
+
+  <!-- TOP PROGRESS BAR -->
+  <div class="w-full bg-slate-200 h-1.5 shrink-0 relative overflow-hidden">
+    <div id="progress-bar" class="bg-indigo-600 h-full w-1/14 transition-all duration-300 ease-out"></div>
+  </div>
+
+  <!-- MAIN CONTAINER (16:9 Responsive Card Viewport) -->
+  <main class="flex-1 w-full max-w-7xl px-2 py-2 sm:px-4 sm:py-3 flex flex-col justify-center items-center overflow-hidden">
+    
+    <div id="slide-card" class="w-full h-full max-h-[86vh] bg-white rounded-2xl shadow-slide border border-slate-200/80 flex flex-col justify-between relative overflow-hidden transition-all duration-300">
+      
+      <!-- SLIDE HEADER -->
+      <header class="px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
+        <div class="flex items-center space-x-3">
+          <span id="slide-category-badge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 uppercase tracking-wide">
+            1 / 14 • Введение
+          </span>
+          <h2 id="slide-header-title" class="text-sm sm:text-base font-bold text-slate-700 truncate max-w-md sm:max-w-xl">
+            Штрих-коды и QR-коды
+          </h2>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-slate-400 font-mono">
+          <span class="hidden sm:inline">Презентация</span>
+          <span>16:9</span>
+        </div>
+      </header>
+
+      <!-- SLIDE BODY CONTENT AREA -->
+      <div id="slide-viewport" class="flex-1 relative overflow-y-auto custom-scrollbar p-4 sm:p-6 flex flex-col">
+        <!-- Dynamic Slide Content Inserted via JavaScript -->
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- BOTTOM CONTROL BAR -->
+  <footer class="w-full max-w-7xl px-4 py-2 shrink-0 flex flex-wrap items-center justify-between text-xs text-slate-600 border-t border-slate-200/60 bg-white/80 backdrop-blur-md">
+    
+    <!-- Prev / Next Controls -->
+    <div class="flex items-center space-x-2">
+      <button onclick="prevSlide()" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium transition flex items-center space-x-1 active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <span class="hidden sm:inline">Назад</span>
+      </button>
+      <button onclick="nextSlide()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm transition flex items-center space-x-1 active:scale-95">
+        <span class="hidden sm:inline">Вперёд</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <!-- Dots Navigation Indicator -->
+    <div id="dots-container" class="hidden md:flex items-center space-x-1.5">
+      <!-- 14 clickable dots rendered here -->
+    </div>
+
+    <!-- Status & Modals Controls -->
+    <div class="flex items-center space-x-3">
+      <span id="slide-counter-text" class="font-mono font-medium text-slate-500 text-xs">Слайд 1 из 14</span>
+      
+      <button onclick="toggleGridModal()" class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 font-medium flex items-center space-x-1 text-xs" title="Обзор всех слайдов (Клавиша G)">
+        <span class="font-mono text-slate-400">[G]</span>
+        <span class="hidden sm:inline">Сетка</span>
+      </button>
+
+      <button onclick="toggleFullscreen()" class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 font-medium flex items-center space-x-1 text-xs" title="Полноэкранный режим (Клавиша F)">
+        <span class="font-mono text-slate-400">[F]</span>
+        <span class="hidden sm:inline">Экран</span>
+      </button>
+    </div>
+
+  </footer>
+
+  <!-- GRID OVERVIEW MODAL -->
+  <div id="grid-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex-col justify-center items-center p-4">
+    <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-lg">Обзор слайдов презентации</h3>
+          <p class="text-xs text-slate-500">Нажмите на любой слайд для быстрого перехода</p>
+        </div>
+        <button onclick="closeGridModal()" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      
+      <div id="grid-modal-list" class="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto custom-scrollbar flex-1">
+        <!-- Dynamic modal grid items rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT SLIDE ENGINE & INTERACTIVE LOGIC -->
+  <script>
+    // State management
+    let currentSlideIndex = 0;
+    const totalSlides = 14;
+
+    // Slide category titles
+    const slideCategories = [
+      "1 / 14 • Введение",
+      "2 / 14 • История",
+      "3 / 14 • Теория",
+      "4 / 14 • Двоичный тренажёр",
+      "5 / 14 • Логика XOR",
+      "6 / 14 • Анатомия 1D",
+      "7 / 14 • Контрольная цифра",
+      "8 / 14 • Практика №1 EAN-8",
+      "9 / 14 • 1D vs 2D & Рид — Соломон",
+      "10 / 14 • Анатомия QR 21×21",
+      "11 / 14 • Маскирование XOR",
+      "12 / 14 • Теория HELLO WORLD",
+      "13 / 14 • Практика №2 Сборка QR",
+      "14 / 14 • Краш-тест & Квишинг"
+    ];
+
+    const slideTitles = [
+      "Штрих-коды и QR-коды",
+      "Эволюция визуального кодирования",
+      "Алфавит машин: 10 vs 2",
+      "Интерактивный двоичный тренажёр (8 бит)",
+      "Операция XOR (Исключающее ИЛИ)",
+      "Анатомия 1D штрих-кода EAN-8",
+      "Алгоритм расчёта контрольной цифры EAN-8",
+      "Практика №1: Генератор штрих-кода EAN-8",
+      "От 1D к 2D и защита Рида — Соломона",
+      "Анатомия QR-кода 21×21 (Версия 1)",
+      "Зачем нужна маска XOR в QR-коде",
+      "Практика №2: Кодирование \"HELLO WORLD\"",
+      "Практика №2: Сборка и рисование QR (21×21)",
+      "Краш-тест QR-кода и Безопасность (Квишинг)"
+    ];
+
+    // ==========================================
+    // QR DATA STRUCTURES & CONSTANTS FOR HELLO WORLD (V1-M)
+    // ==========================================
+    const HELLO_WORLD_DATA_BYTES = [32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236, 17, 236, 17];
+    const HELLO_WORLD_ECC_BYTES  = [196, 35, 39, 119, 235, 215, 231, 226, 93, 23];
+    const HELLO_WORLD_ALL_BYTES  = [...HELLO_WORLD_DATA_BYTES, ...HELLO_WORLD_ECC_BYTES];
+
+    // Check if cell [r,c] is reserved by framework
+    function isReserved(r, c) {
+      if (r <= 8 && c <= 8) return true; // Top-Left Finder, Sep, Format
+      if (r <= 8 && c >= 13) return true; // Top-Right Finder, Sep, Format
+      if (r >= 13 && c <= 8) return true; // Bottom-Left Finder, Sep, Format, Dark Module
+      if (r === 6 || c === 6) return true; // Timing lines
+      return false;
+    }
+
+    // Generate snake bit order path for data & ECC
+    function getSnakePath() {
+      const path = [];
+      let bitIdx = 0;
+      const colPairs = [
+        [20, 19], [18, 17], [16, 15], [14, 13], [12, 11], [10, 9], [8, 7],
+        [5, 4], [3, 2], [1, 0]
+      ];
+      let upward = true;
+
+      for (let p = 0; p < colPairs.length; p++) {
+        const [c1, c2] = colPairs[p];
+        const rows = upward
+          ? Array.from({length: 21}, (_, i) => 20 - i)
+          : Array.from({length: 21}, (_, i) => i);
+
+        for (let r of rows) {
+          for (let c of [c1, c2]) {
+            if (!isReserved(r, c)) {
+              const byteIdx = Math.floor(bitIdx / 8);
+              const bitInByte = 7 - (bitIdx % 8);
+              const isEcc = byteIdx >= 16;
+              path.push({
+                r, c,
+                bitIdx,
+                byteIdx,
+                bitInByte,
+                type: isEcc ? 'ecc' : 'data'
+              });
+              bitIdx++;
+            }
+          }
+        }
+        upward = !upward;
+      }
+      return path;
+    }
+
+    const SKELETON_SNAKE_PATH = getSnakePath();
+
+    // Map cell [r,c] to description
+    function getCellInfo(r, c) {
+      if (r < 0 || r >= 21 || c < 0 || c >= 21) return { name: "За пределами матрицы", zone: "none" };
+
+      // Top Left Finder & Sep
+      if (r <= 6 && c <= 6) return { name: "Поисковый квадрат (Верхний левый)", zone: "finder" };
+      if ((r === 7 && c <= 7) || (c === 7 && r <= 7)) return { name: "Разделитель поискового квадрата (TL)", zone: "sep" };
+
+      // Top Right Finder & Sep
+      if (r <= 6 && c >= 14) return { name: "Поисковый квадрат (Верхний правый)", zone: "finder" };
+      if ((r === 7 && c >= 13) || (c === 13 && r <= 7)) return { name: "Разделитель поискового квадрата (TR)", zone: "sep" };
+
+      // Bottom Left Finder & Sep
+      if (r >= 14 && c <= 6) return { name: "Поисковый квадрат (Нижний левый)", zone: "finder" };
+      if ((r === 13 && c <= 7) || (c === 7 && r >= 13)) return { name: "Разделитель поискового квадрата (BL)", zone: "sep" };
+
+      // Timing
+      if (r === 6) return { name: "Горизонтальная полоса синхронизации", zone: "timing" };
+      if (c === 6) return { name: "Вертикальная полоса синхронизации", zone: "timing" };
+
+      // Dark module
+      if (r === 13 && c === 8) return { name: "Тёмный модуль (Всегда 1)", zone: "dark" };
+
+      // Format info
+      if ((r === 8 && c <= 8) || (c === 8 && r <= 8) || (r === 8 && c >= 13) || (c === 8 && r >= 13)) {
+        return { name: "Код формата (Уровень M, Маска 0)", zone: "format" };
+      }
+
+      // Find in snake path
+      const item = SKELETON_SNAKE_PATH.find(p => p.r === r && p.c === c);
+      if (item) {
+        if (item.type === 'data') {
+          return { name: `Данные: Байт ${item.byteIdx + 1} / 16 (Бит ${item.bitInByte})`, zone: "data", byteIdx: item.byteIdx };
+        } else {
+          return { name: `Рид — Соломон: Байт ${item.byteIdx - 15} / 10 (Бит ${item.bitInByte})`, zone: "ecc", byteIdx: item.byteIdx };
+        }
+      }
+
+      return { name: "Модуль данных", zone: "data" };
+    }
+
+    // Generate full HELLO WORLD matrix (0 or 1)
+    function generateHelloWorldMatrix(step = 5) {
+      const m = Array.from({length: 21}, () => Array(21).fill(0));
+      if (step === 0) return m;
+
+      // Draw finder
+      function drawFinder(r0, c0) {
+        for (let r = 0; r < 7; r++) {
+          for (let c = 0; c < 7; c++) {
+            if (r === 0 || r === 6 || c === 0 || c === 6 || (r >= 2 && r <= 4 && c >= 2 && c <= 4)) {
+              m[r0 + r][c0 + c] = 1;
+            }
+          }
+        }
+      }
+      drawFinder(0, 0);
+      drawFinder(0, 14);
+      drawFinder(14, 0);
+
+      // Timing
+      for (let i = 8; i <= 12; i++) {
+        m[6][i] = (i % 2 === 0) ? 1 : 0;
+        m[i][6] = (i % 2 === 0) ? 1 : 0;
+      }
+
+      // Dark Module
+      m[13][8] = 1;
+
+      if (step < 2) return m;
+
+      // Format string (15 bits for M-0: 101010000010010)
+      const fmtBits = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0];
+      const tlCoords = [
+        [8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],
+        [7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]
+      ];
+      const otherCoords = [
+        [20,8],[19,8],[18,8],[17,8],[16,8],[15,8],[14,8],
+        [8,13],[8,14],[8,15],[8,16],[8,17],[8,18],[8,19],[8,20]
+      ];
+      for (let i = 0; i < 15; i++) {
+        m[tlCoords[i][0]][tlCoords[i][1]] = fmtBits[i];
+        m[otherCoords[i][0]][otherCoords[i][1]] = fmtBits[i];
+      }
+
+      if (step < 4) return m;
+
+      // Data + ECC bits
+      SKELETON_SNAKE_PATH.forEach(({r, c, byteIdx, bitInByte}) => {
+        let bit = (HELLO_WORLD_ALL_BYTES[byteIdx] >> bitInByte) & 1;
+        if (step >= 5) {
+          if ((r + c) % 2 === 0) {
+            bit ^= 1;
+          }
+        }
+        m[r][c] = bit;
+      });
+
+      return m;
+    }
+
+    const TARGET_HELLO_WORLD_MATRIX = generateHelloWorldMatrix(5);
+
+
+    // ==========================================
+    // INITIALIZATION & NAVIGATION
+    // ==========================================
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDots();
+      renderGridModalItems();
+      showSlide(0);
+    });
+
+    function showSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+      currentSlideIndex = index;
+
+      // Progress bar & Counter
+      document.getElementById('progress-bar').style.width = `${((index + 1) / totalSlides) * 100}%`;
+      document.getElementById('slide-category-badge').innerText = slideCategories[index];
+      document.getElementById('slide-header-title').innerText = slideTitles[index];
+      document.getElementById('slide-counter-text').innerText = `Слайд ${index + 1} из ${totalSlides}`;
+
+      // Update dots
+      const dots = document.querySelectorAll('.dot-indicator');
+      dots.forEach((d, i) => {
+        if (i === index) {
+          d.className = "dot-indicator w-6 h-2 rounded-full bg-indigo-600 transition-all duration-300";
+        } else {
+          d.className = "dot-indicator w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300";
+        }
+      });
+
+      // Render slide content
+      const viewport = document.getElementById('slide-viewport');
+      viewport.innerHTML = slideRenderers[index]();
+      
+      // Post-mount slide handlers
+      if (slideMounts[index]) {
+        slideMounts[index]();
+      }
+    }
+
+    function nextSlide() { showSlide(currentSlideIndex + 1); }
+    function prevSlide() { showSlide(currentSlideIndex - 1); }
+
+    function renderDots() {
+      const container = document.getElementById('dots-container');
+      container.innerHTML = '';
+      for (let i = 0; i < totalSlides; i++) {
+        const btn = document.createElement('button');
+        btn.title = `Перейти к слайду ${i + 1}`;
+        btn.onclick = () => showSlide(i);
+        btn.className = i === 0 
+          ? "dot-indicator w-6 h-2 rounded-full bg-indigo-600 transition-all duration-300"
+          : "dot-indicator w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300";
+        container.appendChild(btn);
+      }
+    }
+
+    function renderGridModalItems() {
+      const list = document.getElementById('grid-modal-list');
+      list.innerHTML = '';
+      slideTitles.forEach((title, i) => {
+        const card = document.createElement('div');
+        card.onclick = () => { showSlide(i); closeGridModal(); };
+        card.className = "p-3 rounded-xl border border-slate-200 hover:border-indigo-500 hover:shadow-md cursor-pointer transition bg-slate-50 flex flex-col justify-between h-28 group";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-indigo-600">Слайд ${i + 1}</span>
+            <span class="text-[10px] text-slate-400 font-mono">16:9</span>
+          </div>
+          <p class="text-xs font-semibold text-slate-700 group-hover:text-indigo-600 line-clamp-2 transition">${title}</p>
+          <div class="text-[10px] text-slate-400 truncate">${slideCategories[i]}</div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function toggleGridModal() {
+      const modal = document.getElementById('grid-modal');
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+    }
+    function closeGridModal() {
+      const modal = document.getElementById('grid-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // Keyboard navigation guard (don't navigate if user is typing in inputs!)
+    window.addEventListener('keydown', (e) => {
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT' || active.isContentEditable)) {
+        return; // Prevent keydown interception during typing
+      }
+
+      if (e.key === 'ArrowRight' || e.key === 'Space') {
+        e.preventDefault();
+        if (e.shiftKey && e.key === 'Space') prevSlide();
+        else nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'g' || e.key === 'G') {
+        toggleGridModal();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      } else if (e.key === 'Escape') {
+        closeGridModal();
+      }
+    });
+
+
+    // ==========================================
+    // SLIDE CONTENT RENDERERS & MOUNT HOOKS
+    // ==========================================
+    const slideRenderers = [];
+    const slideMounts = [];
+
+    // --- SLIDE 1: TITULAR ---
+    slideRenderers[0] = () => `
+      <div class="flex-1 flex flex-col md:flex-row items-center justify-between gap-6 h-full">
+        <div class="flex-1 space-y-4">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-100/80 text-indigo-700 text-xs font-semibold">
+            <span>🚀 Практический Workshop</span>
+            <span>•</span>
+            <span>1.5 часа</span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            Штрих-коды <br class="hidden sm:inline"/>и <span class="text-indigo-600">QR-коды</span>
+          </h1>
+          <p class="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl">
+            Погружение в физику и математику оптического кодирования. От базовой линейной полосы EAN-8 до двухмерных матриц QR с коррекцией ошибок Рида — Соломона.
+          </p>
+          <div class="pt-2 grid grid-cols-2 gap-3 max-w-md">
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="text-xs text-slate-500">1D Штрих-код</div>
+              <div class="text-lg font-bold font-mono text-slate-800">EAN-8 (67 модулей)</div>
+            </div>
+            <div class="p-3 rounded-xl bg-indigo-50/50 border border-indigo-100">
+              <div class="text-xs text-indigo-600 font-medium">2D QR-код V1</div>
+              <div class="text-lg font-bold font-mono text-indigo-700">21×21 (441 модуль)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-200/80 w-full max-w-md relative overflow-hidden group">
+          <div class="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-transparent"></div>
+          <svg class="w-full h-64 text-indigo-600" viewBox="0 0 300 300" fill="none">
+            <!-- Animated Barcode to QR morphing illustration -->
+            <rect x="20" y="40" width="10" height="220" fill="currentColor" class="animate-pulse"/>
+            <rect x="40" y="40" width="20" height="220" fill="currentColor"/>
+            <rect x="70" y="40" width="10" height="220" fill="currentColor"/>
+            <rect x="90" y="40" width="30" height="220" fill="currentColor"/>
+            <!-- QR finder top right -->
+            <rect x="180" y="40" width="80" height="80" rx="10" fill="none" stroke="currentColor" stroke-width="12"/>
+            <rect x="205" y="65" width="30" height="30" fill="currentColor"/>
+            <!-- QR finder bottom right -->
+            <rect x="180" y="180" width="80" height="80" rx="10" fill="none" stroke="currentColor" stroke-width="12"/>
+            <rect x="205" y="205" width="30" height="30" fill="currentColor"/>
+            <!-- Data dots -->
+            <circle cx="140" cy="80" r="8" fill="currentColor"/>
+            <circle cx="140" cy="120" r="8" fill="currentColor"/>
+            <circle cx="140" cy="160" r="8" fill="currentColor"/>
+            <line x1="10" y1="150" x2="290" y2="150" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 4" class="animate-pulse"/>
+          </svg>
+        </div>
+      </div>
+    `;
+
+    // --- SLIDE 2: EVOLUTION ---
+    slideRenderers[1] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Эволюция визуального кодирования</h3>
+          <p class="text-sm text-slate-500">Ключевые вехи от морзянки на песке до смарт-матриц в производстве</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-indigo-300 transition space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">1949 ГОД</span>
+              <span class="text-xl">🏖️</span>
+            </div>
+            <h4 class="font-bold text-slate-800">Норман Вудленд & Б. Силвер</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Вычерчивание точек и тире Азбуки Морзе на песке Майами-Бич. Идея вытягивания точек в круговые полосы — патент «Бычий глаз».
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-indigo-300 transition space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">1974 ГОД</span>
+              <span class="text-xl">🍬</span>
+            </div>
+            <h4 class="font-bold text-slate-800">Рождение UPC & Wrigley's</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              26 июня 1974 года в супермаркете Marsh (Огайо) сканирована первая упаковка жвачки Wrigley's Juicy Fruit с 1D штрих-кодом UPC.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-indigo-50/60 border border-indigo-200 transition space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold font-mono text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded">1994 ГОД</span>
+              <span class="text-xl">⬛</span>
+            </div>
+            <h4 class="font-bold text-slate-900">Масахиро Хара (Denso Wave)</h4>
+            <p class="text-xs text-slate-700 leading-relaxed">
+              Вдохновившись черно-белыми камнями игры Го, создал 2D QR-код для маркировки автомобильных деталей Toyota. Патент открыт для всех!
+            </p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-800 text-white flex items-center justify-between">
+          <div class="space-y-1">
+            <div class="text-xs text-indigo-300 font-mono">ЦИТАТА МАСАХИРО ХАРА</div>
+            <div class="text-xs sm:text-sm italic">«Я хотел создать код, который можно бы легко считывать на высоких скоростях сборки...»</div>
+          </div>
+          <span class="text-2xl font-mono text-indigo-400 px-3">QR</span>
+        </div>
+      </div>
+    `;
+
+    // --- SLIDE 3: ALPHABET ---
+    slideRenderers[2] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Алфавит машин: 10 vs 2</h3>
+          <p class="text-sm text-slate-500">Физика оптического отражения лазера и фотодиода</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-800">Человек (Base-10)</span>
+              <span class="text-xs font-mono bg-slate-200 text-slate-700 px-2 py-0.5 rounded">Символы 0..9</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Аналоговый мир и десятичные цифры. Требуют распознавания сложных оптических форм букв и чисел.
+            </p>
+            <div class="p-3 bg-white rounded-lg border border-slate-200 font-mono text-center text-lg font-bold text-slate-700">
+              0 1 2 3 4 5 6 7 8 9
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-indigo-50/50 border border-indigo-200 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-indigo-950">Сканер и Машина (Base-2)</span>
+              <span class="text-xs font-mono bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">Биты 0 / 1</span>
+            </div>
+            <p class="text-xs text-slate-700 leading-relaxed">
+              Физический принцип: **0** (белая полоса) — отражает 90% света. **1** (чёрная полоса) — поглощает свет.
+            </p>
+            <div class="p-3 bg-slate-900 rounded-lg text-emerald-400 font-mono text-center text-lg font-bold">
+              0 (Белый: Reflected) | 1 (Чёрный: Absorbed)
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Laser Reflection Simulator -->
+        <div class="p-4 rounded-xl bg-slate-900 text-white space-y-3">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-indigo-400">Симуляция сканирования лазером</span>
+            <span id="laser-status" class="text-emerald-400">Отражение 90% → Сигнал: LOW (Белый 0)</span>
+          </div>
+          
+          <div class="relative h-20 bg-slate-800 rounded-lg overflow-hidden flex items-center justify-center border border-slate-700">
+            <div class="absolute inset-y-0 left-1/2 w-24 bg-white border-x-4 border-black flex items-center justify-center text-slate-900 font-bold font-mono text-xs">
+              БЕЛЫЙ (0)
+            </div>
+            <div class="absolute inset-y-0 right-10 w-24 bg-black border-x-4 border-slate-700 flex items-center justify-center text-white font-bold font-mono text-xs">
+              ЧЁРНЫЙ (1)
+            </div>
+            <!-- Laser dot -->
+            <div id="laser-dot" class="w-4 h-4 rounded-full bg-red-500 shadow-[0_0_15px_#ef4444] absolute left-1/4 transition-all duration-300"></div>
+          </div>
+
+          <div class="flex justify-center space-x-4">
+            <button onclick="setLaserPos('white')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs font-mono rounded border border-slate-600">
+              Навести на белый (0)
+            </button>
+            <button onclick="setLaserPos('black')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs font-mono rounded border border-slate-600">
+              Навести на чёрный (1)
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    slideMounts[2] = () => {
+      window.setLaserPos = (type) => {
+        const dot = document.getElementById('laser-dot');
+        const status = document.getElementById('laser-status');
+        if (type === 'white') {
+          dot.style.left = '48%';
+          status.innerText = 'Отражение 92% → Фотодиод: 0 (Белый модуль)';
+          status.className = 'text-emerald-400';
+        } else {
+          dot.style.left = '78%';
+          status.innerText = 'Поглощение 95% → Фотодиод: 1 (Чёрный модуль)';
+          status.className = 'text-amber-400';
+        }
+      };
+    };
+
+    // --- SLIDE 4: BINARY TRAINER ---
+    slideRenderers[3] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Интерактивный двоичный тренажёр</h3>
+          <p class="text-sm text-slate-500">Нажмите на биты 8-битного байта, чтобы сформировать число от 0 до 255</p>
+        </div>
+
+        <div class="grid grid-cols-8 gap-2" id="binary-bits-container">
+          <!-- 8 bit cards rendered dynamically -->
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-900 text-white space-y-3 font-mono">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span>ДВОИЧНАЯ СТРОКА:</span>
+            <span>ДЕСЯТИЧНЫЙ ИТОГ:</span>
+          </div>
+          <div class="flex items-center justify-between text-2xl font-bold">
+            <span id="binary-string-val" class="text-indigo-400 tracking-wider">00000000</span>
+            <span id="decimal-val" class="text-emerald-400 text-3xl">0</span>
+          </div>
+          <div id="binary-formula" class="text-xs text-slate-400 truncate">
+            0×128 + 0×64 + 0×32 + 0×16 + 0×8 + 0×4 + 0×2 + 0×1 = 0
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+          <div class="flex space-x-2">
+            <button onclick="setBinaryPreset(11)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-mono rounded-lg border">Пресет: 11</button>
+            <button onclick="setBinaryPreset(25)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-mono rounded-lg border">Пресет: 25</button>
+            <button onclick="setBinaryPreset(65)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-mono rounded-lg border">ASCII 'A' (65)</button>
+            <button onclick="setBinaryPreset(72)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-mono rounded-lg border">ASCII 'H' (72)</button>
+          </div>
+          <button onclick="setBinaryPreset(0)" class="px-3 py-1 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-medium rounded-lg border border-red-200">
+            Сброс (0)
+          </button>
+        </div>
+      </div>
+    `;
+
+    let bitStates = [0, 0, 0, 0, 0, 0, 0, 0];
+    const bitValues = [128, 64, 32, 16, 8, 4, 2, 1];
+
+    slideMounts[3] = () => {
+      const updateBinaryUI = () => {
+        const container = document.getElementById('binary-bits-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        bitStates.forEach((val, idx) => {
+          const card = document.createElement('button');
+          card.onclick = () => {
+            bitStates[idx] = bitStates[idx] === 1 ? 0 : 1;
+            updateBinaryUI();
+          };
+          card.className = `p-3 rounded-xl border-2 flex flex-col items-center justify-between h-24 transition-all duration-200 ${
+            val === 1 
+              ? 'bg-indigo-600 text-white border-indigo-700 shadow-md scale-105' 
+              : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300'
+          }`;
+          card.innerHTML = `
+            <span class="text-[10px] font-mono opacity-80">2<sup>${7 - idx}</sup></span>
+            <span class="text-2xl font-bold font-mono">${val}</span>
+            <span class="text-xs font-mono font-medium opacity-90">${bitValues[idx]}</span>
+          `;
+          container.appendChild(card);
+        });
+
+        const binStr = bitStates.join('');
+        const decVal = bitStates.reduce((acc, b, i) => acc + b * bitValues[i], 0);
+        
+        document.getElementById('binary-string-val').innerText = binStr;
+        document.getElementById('decimal-val').innerText = decVal;
+
+        const terms = bitStates.map((b, i) => `${b}×${bitValues[i]}`);
+        document.getElementById('binary-formula').innerText = `${terms.join(' + ')} = ${decVal}`;
+      };
+
+      window.setBinaryPreset = (num) => {
+        for (let i = 0; i < 8; i++) {
+          bitStates[i] = (num >> (7 - i)) & 1;
+        }
+        updateBinaryUI();
+      };
+
+      updateBinaryUI();
+    };
+
+    // --- SLIDE 5: XOR ---
+    slideRenderers[4] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Операция XOR (Исключающее ИЛИ)</h3>
+          <p class="text-sm text-slate-500">Математический фундамент инверсии цветов и сброса масок</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+            <h4 class="font-bold text-slate-800 text-sm">Таблица истинности 2×2 (A ⊕ B)</h4>
+            <div class="grid grid-cols-2 gap-2 text-center font-mono text-xs">
+              <div class="p-2.5 bg-white rounded border border-slate-200">0 ⊕ 0 = <b class="text-indigo-600">0</b></div>
+              <div class="p-2.5 bg-white rounded border border-slate-200">1 ⊕ 1 = <b class="text-indigo-600">0</b></div>
+              <div class="p-2.5 bg-indigo-50 rounded border border-indigo-200 text-indigo-900 font-bold">0 ⊕ 1 = <b>1</b></div>
+              <div class="p-2.5 bg-indigo-50 rounded border border-indigo-200 text-indigo-900 font-bold">1 ⊕ 0 = <b>1</b></div>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed pt-1">
+              Правило: Результат равен <b>1</b> только тогда, когда операнды <b>различаются</b>.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+            <h4 class="font-bold text-slate-800 text-sm">Цветовые правила инверсии</h4>
+            <div class="space-y-2 text-xs">
+              <div class="p-2 bg-white rounded border flex items-center justify-between">
+                <span>Бит маски = 0</span>
+                <span class="font-bold text-emerald-600">⊕ 0 → Без изменений</span>
+              </div>
+              <div class="p-2 bg-white rounded border flex items-center justify-between">
+                <span>Бит маски = 1</span>
+                <span class="font-bold text-indigo-600">⊕ 1 → Инверсия (0↔1)</span>
+              </div>
+            </div>
+            <div class="p-3 bg-indigo-50/70 rounded-lg text-indigo-900 text-xs font-mono">
+              Свойство обратимости: (A ⊕ MASK) ⊕ MASK = A
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive XOR Color Mixer Tool -->
+        <div class="p-4 rounded-xl bg-slate-900 text-white space-y-3">
+          <div class="text-xs font-mono text-indigo-400">ИНТЕРАКТИВНЫЙ XOR ИНВЕРТОР МОДУЛЯ</div>
+          
+          <div class="flex items-center justify-around text-center">
+            <div>
+              <div class="text-xs text-slate-400 mb-1">Бит данных (A)</div>
+              <button id="xor-a-btn" onclick="toggleXorA()" class="w-16 h-16 rounded-xl border-2 border-slate-600 font-mono text-2xl font-bold bg-white text-black transition">
+                0
+              </button>
+            </div>
+
+            <span class="text-2xl font-mono text-indigo-400">⊕</span>
+
+            <div>
+              <div class="text-xs text-slate-400 mb-1">Бит маски (B)</div>
+              <button id="xor-b-btn" onclick="toggleXorB()" class="w-16 h-16 rounded-xl border-2 border-slate-600 font-mono text-2xl font-bold bg-slate-800 text-white transition">
+                0
+              </button>
+            </div>
+
+            <span class="text-2xl font-mono text-indigo-400">=</span>
+
+            <div>
+              <div class="text-xs text-slate-400 mb-1">Итоговый цвет</div>
+              <div id="xor-res-box" class="w-16 h-16 rounded-xl border-2 border-indigo-500 flex items-center justify-center font-mono text-2xl font-bold bg-white text-black transition">
+                0
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    let xorA = 0;
+    let xorB = 0;
+
+    slideMounts[4] = () => {
+      const updateXorUI = () => {
+        const btnA = document.getElementById('xor-a-btn');
+        const btnB = document.getElementById('xor-b-btn');
+        const resBox = document.getElementById('xor-res-box');
+
+        if (!btnA || !btnB || !resBox) return;
+
+        btnA.innerText = xorA;
+        btnA.className = `w-16 h-16 rounded-xl border-2 font-mono text-2xl font-bold transition ${xorA === 1 ? 'bg-black text-white border-white' : 'bg-white text-black border-slate-300'}`;
+
+        btnB.innerText = xorB;
+        btnB.className = `w-16 h-16 rounded-xl border-2 font-mono text-2xl font-bold transition ${xorB === 1 ? 'bg-indigo-600 text-white border-indigo-300' : 'bg-slate-800 text-white border-slate-600'}`;
+
+        const res = xorA ^ xorB;
+        resBox.innerText = res;
+        resBox.className = `w-16 h-16 rounded-xl border-2 font-mono text-2xl font-bold flex items-center justify-center transition ${res === 1 ? 'bg-black text-white border-emerald-400' : 'bg-white text-black border-indigo-400'}`;
+      };
+
+      window.toggleXorA = () => { xorA ^= 1; updateXorUI(); };
+      window.toggleXorB = () => { xorB ^= 1; updateXorUI(); };
+      updateXorUI();
+    };
+
+    // --- SLIDE 6: EAN-8 ANATOMY ---
+    slideRenderers[5] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Анатомия 1D штрих-кода EAN-8</h3>
+          <p class="text-sm text-slate-500">67 модулей: защитные ограждения, левые L-коды и правые R-коды</p>
+        </div>
+
+        <div class="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center space-y-4">
+          <!-- SVG Barcode representation of 96385074 -->
+          <div class="w-full max-w-lg bg-white p-4 rounded-xl border border-slate-200">
+            <svg viewBox="0 0 280 120" class="w-full h-auto">
+              <!-- Quiet left -->
+              <rect x="0" y="0" width="20" height="100" fill="#f8fafc"/>
+              
+              <!-- Start guard 101 -->
+              <rect x="20" y="10" width="3" height="90" fill="#000"/>
+              <rect x="23" y="10" width="3" height="90" fill="#fff"/>
+              <rect x="26" y="10" width="3" height="90" fill="#000"/>
+
+              <!-- 4 Left Digits: 9,6,3,8 (7 modules each = 28) -->
+              <g fill="#000">
+                <!-- 9: 0001011 -->
+                <rect x="38" y="10" width="3" height="80"/><rect x="44" y="10" width="6" height="80"/>
+                <!-- 6: 0101111 -->
+                <rect x="53" y="10" width="3" height="80"/><rect x="59" y="10" width="12" height="80"/>
+                <!-- 3: 0111101 -->
+                <rect x="74" y="10" width="12" height="80"/><rect x="89" y="10" width="3" height="80"/>
+                <!-- 8: 0110111 -->
+                <rect x="98" y="10" width="6" height="80"/><rect x="107" y="10" width="9" height="80"/>
+              </g>
+
+              <!-- Center guard 01010 -->
+              <rect x="113" y="10" width="3" height="90" fill="#fff"/>
+              <rect x="116" y="10" width="3" height="90" fill="#000"/>
+              <rect x="119" y="10" width="3" height="90" fill="#fff"/>
+              <rect x="122" y="10" width="3" height="90" fill="#000"/>
+              <rect x="125" y="10" width="3" height="90" fill="#fff"/>
+
+              <!-- 4 Right Digits: 5,0,7,4 (R-codes) -->
+              <g fill="#000">
+                <!-- 5: 1001110 -->
+                <rect x="128" y="10" width="3" height="80"/><rect x="137" y="10" width="9" height="80"/>
+                <!-- 0: 1110010 -->
+                <rect x="149" y="10" width="9" height="80"/><rect x="164" y="10" width="3" height="80"/>
+                <!-- 7: 1101100 -->
+                <rect x="170" y="10" width="6" height="80"/><rect x="182" y="10" width="6" height="80"/>
+                <!-- 4 (Check digit): 1011100 -->
+                <rect x="191" y="10" width="3" height="80"/><rect x="197" y="10" width="9" height="80"/>
+              </g>
+
+              <!-- Stop guard 101 -->
+              <rect x="212" y="10" width="3" height="90" fill="#000"/>
+              <rect x="215" y="10" width="3" height="90" fill="#fff"/>
+              <rect x="218" y="10" width="3" height="90" fill="#000"/>
+
+              <!-- Numbers below -->
+              <text x="50" y="105" font-family="monospace" font-size="12" font-weight="bold" fill="#334155">9 6 3 8</text>
+              <text x="140" y="105" font-family="monospace" font-size="12" font-weight="bold" fill="#334155">5 0 7 4</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="font-bold text-slate-800">Ограждения (Guards)</span>
+            <p class="text-slate-500 text-[11px] mt-1">Крайние (101) и центральное (01010) синхронизируют тактовые импульсы сканера.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="font-bold text-slate-800">L-код (Левая часть)</span>
+            <p class="text-slate-500 text-[11px] mt-1">Каждая цифра начинается с 0 (белого) и содержит нечётное число чёрных штрихов.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="font-bold text-slate-800">R-код (Правая часть)</span>
+            <p class="text-slate-500 text-[11px] mt-1">Каждая цифра начинается с 1 (чёрного). Последняя цифра (4) — контрольная!</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // --- SLIDE 7: EAN-8 CHECK DIGIT ---
+    slideRenderers[6] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Алгоритм расчёта контрольной цифры EAN-8</h3>
+          <p class="text-sm text-slate-500">Введите 7 цифр для автоматического верификационного шага</p>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+          <div class="flex items-center space-x-3">
+            <label class="text-xs font-bold text-slate-700">Первые 7 цифр:</label>
+            <input id="ean7-input" type="text" maxlength="7" value="9638507" class="px-3 py-1.5 rounded-lg border border-slate-300 font-mono font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-36">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+            <span class="text-xs font-bold font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">ШАГ 1</span>
+            <h4 class="font-bold text-slate-800 text-xs">Нечётные позиции (×3)</h4>
+            <div id="ean-step1-res" class="text-xs font-mono text-slate-600">(9+3+5+7) × 3 = 72</div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+            <span class="text-xs font-bold font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">ШАГ 2</span>
+            <h4 class="font-bold text-slate-800 text-xs">Чётные позиции (×1)</h4>
+            <div id="ean-step2-res" class="text-xs font-mono text-slate-600">6 + 8 + 0 = 14</div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-indigo-600 text-white space-y-2">
+            <span class="text-xs font-bold font-mono bg-indigo-500 text-white px-2 py-0.5 rounded">ИТОГ</span>
+            <h4 class="font-bold text-xs">Контрольная цифра</h4>
+            <div id="ean-step3-res" class="text-xl font-bold font-mono text-emerald-300">4</div>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-900 text-slate-300 text-xs font-mono">
+          Формула: (10 - ((Сумма_1 + Сумма_2) mod 10)) mod 10
+        </div>
+      </div>
+    `;
+
+    slideMounts[6] = () => {
+      const inp = document.getElementById('ean7-input');
+      const calcEanCheck = () => {
+        let val = inp.value.replace(/\D/g, '');
+        if (val.length < 7) val = val.padEnd(7, '0');
+        val = val.slice(0, 7);
+
+        const d = val.split('').map(Number);
+        const sumOdd = (d[0] + d[2] + d[4] + d[6]) * 3;
+        const sumEven = d[1] + d[3] + d[5];
+        const total = sumOdd + sumEven;
+        const checkDigit = (10 - (total % 10)) % 10;
+
+        document.getElementById('ean-step1-res').innerText = `(${d[0]}+${d[2]}+${d[4]}+${d[6]}) × 3 = ${sumOdd}`;
+        document.getElementById('ean-step2-res').innerText = `${d[1]} + ${d[3]} + ${d[5]} = ${sumEven}`;
+        document.getElementById('ean-step3-res').innerText = checkDigit;
+      };
+
+      inp.addEventListener('input', calcEanCheck);
+      calcEanCheck();
+    };
+
+    // --- SLIDE 8: PRACTICE 1 EAN-8 GENERATOR ---
+    slideRenderers[7] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Практика №1: Генератор штрих-кода EAN-8</h3>
+          <p class="text-sm text-slate-500">Генерация векторного штрих-кода на Canvas в реальном времени</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="space-y-3">
+            <label class="text-xs font-bold text-slate-700">7-значный код:</label>
+            <input id="pract1-input" type="text" maxlength="7" value="4006381" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <div class="text-xs text-slate-500">
+              Контрольная цифра рассчитывается автоматически!
+            </div>
+            <div class="pt-2 flex flex-col space-y-2">
+              <button onclick="setPract1('9638507')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-xs font-mono rounded text-left border">Пресет: 9638507</button>
+              <button onclick="setPract1('4006381')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-xs font-mono rounded text-left border">Пресет: 4006381</button>
+              <button onclick="setPract1('5901234')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-xs font-mono rounded text-left border">Пресет: 5901234</button>
+            </div>
+          </div>
+
+          <div class="md:col-span-2 p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col items-center justify-center">
+            <canvas id="ean8-canvas" width="340" height="150" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"></canvas>
+            <div id="ean8-full-code" class="mt-2 text-sm font-bold font-mono text-slate-700">EAN-8: 4006381-7</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    slideMounts[7] = () => {
+      const inp = document.getElementById('pract1-input');
+      const canvas = document.getElementById('ean8-canvas');
+
+      const L_CODES = ["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"];
+      const R_CODES = ["1110010","1100110","1101100","1000010","1011100","1001110","1010000","1000100","1001000","1110100"];
+
+      const drawEAN8 = () => {
+        let val = inp.value.replace(/\D/g, '');
+        if (val.length < 7) val = val.padEnd(7, '0');
+        val = val.slice(0, 7);
+
+        const d = val.split('').map(Number);
+        const sumOdd = (d[0] + d[2] + d[4] + d[6]) * 3;
+        const sumEven = d[1] + d[3] + d[5];
+        const checkDigit = (10 - ((sumOdd + sumEven) % 10)) % 10;
+        const fullDigits = [...d, checkDigit];
+
+        document.getElementById('ean8-full-code').innerText = `Код EAN-8: ${val}${checkDigit}`;
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Build bit sequence (67 modules)
+        let bits = "101"; // Start
+        for (let i = 0; i < 4; i++) bits += L_CODES[fullDigits[i]];
+        bits += "01010"; // Center
+        for (let i = 4; i < 8; i++) bits += R_CODES[fullDigits[i]];
+        bits += "101"; // Stop
+
+        const moduleWidth = 3.8;
+        const startX = (canvas.width - (bits.length * moduleWidth)) / 2;
+
+        for (let i = 0; i < bits.length; i++) {
+          const isBar = bits[i] === '1';
+          const isGuard = (i < 3) || (i >= 31 && i < 36) || (i >= 64);
+          const barHeight = isGuard ? 100 : 85;
+
+          ctx.fillStyle = isBar ? '#0f172a' : '#ffffff';
+          ctx.fillRect(startX + i * moduleWidth, 15, moduleWidth, barHeight);
+        }
+
+        // Draw numbers
+        ctx.fillStyle = '#334155';
+        ctx.font = 'bold 14px JetBrains Mono';
+        ctx.fillText(fullDigits.slice(0,4).join(' '), startX + 15, 130);
+        ctx.fillText(fullDigits.slice(4,8).join(' '), startX + 140, 130);
+      };
+
+      window.setPract1 = (str) => {
+        inp.value = str;
+        drawEAN8();
+      };
+
+      inp.addEventListener('input', drawEAN8);
+      drawEAN8();
+    };
+
+    // --- SLIDE 9: 1D VS 2D & REED-SOLOMON ---
+    slideRenderers[8] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">От 1D к 2D и защита Рида — Соломона</h3>
+          <p class="text-sm text-slate-500">Сравнение ёмкости и уровней избыточности (Error Correction Level)</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+            <span class="text-xs font-mono font-bold text-slate-500">1D ШТРИХ-КОД</span>
+            <h4 class="font-bold text-slate-800">Линейный EAN-8</h4>
+            <div class="text-2xl font-bold font-mono text-slate-800">8 цифр</div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              0% коррекции повреждений. Повреждение любого штриха блокирует считывание.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-indigo-50 border border-indigo-200 space-y-2">
+            <span class="text-xs font-mono font-bold text-indigo-600">2D QR VERSION 1</span>
+            <h4 class="font-bold text-indigo-950">Матрица 21×21</h4>
+            <div class="text-2xl font-bold font-mono text-indigo-700">25 букв / 41 цифра</div>
+            <p class="text-xs text-slate-700 leading-relaxed">
+              До 30% избыточности Reed-Solomon. Восстановление данных при частичном уничтожении!
+            </p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+            <span class="text-xs font-mono font-bold text-slate-500">2D QR VERSION 40</span>
+            <h4 class="font-bold text-slate-800">Матрица 177×177</h4>
+            <div class="text-2xl font-bold font-mono text-slate-800">4,296 букв</div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Хранение бинарных файлов, фотографий и сложных сертификатов безопасности.
+            </p>
+          </div>
+        </div>
+
+        <!-- Reed Solomon Level Selector -->
+        <div class="p-4 rounded-xl bg-slate-900 text-white space-y-3">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-indigo-400">УРОВНИ КОРРЕКЦИИ ОШИБОК REED-SOLOMON (ECC)</span>
+            <span id="ecc-level-desc" class="text-emerald-400">Уровень M (15% восстановление)</span>
+          </div>
+
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="setEccLevel('L')" class="p-2 rounded bg-slate-800 hover:bg-slate-700 border border-slate-600 text-center font-mono text-xs">
+              <b>L</b> (7%)
+            </button>
+            <button onclick="setEccLevel('M')" class="p-2 rounded bg-indigo-600 border border-indigo-400 text-center font-mono text-xs">
+              <b>M</b> (15%)
+            </button>
+            <button onclick="setEccLevel('Q')" class="p-2 rounded bg-slate-800 hover:bg-slate-700 border border-slate-600 text-center font-mono text-xs">
+              <b>Q</b> (25%)
+            </button>
+            <button onclick="setEccLevel('H')" class="p-2 rounded bg-slate-800 hover:bg-slate-700 border border-slate-600 text-center font-mono text-xs">
+              <b>H</b> (30%)
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    slideMounts[8] = () => {
+      window.setEccLevel = (lvl) => {
+        const desc = document.getElementById('ecc-level-desc');
+        const map = {
+          'L': 'Уровень L (7% восстанавливаемости) — Максимум полезных данных',
+          'M': 'Уровень M (15% восстанавливаемости) — Стандартный баланс для штрих-кодов',
+          'Q': 'Уровень Q (25% восстанавливаемости) — Высокая надёжность в производстве',
+          'H': 'Уровень H (30% восстанавливаемости) — Позволяет вставлять логотип в центр QR!'
+        };
+        desc.innerText = map[lvl];
+      };
+    };
+
+    // --- SLIDE 10: QR 21x21 ANATOMY ---
+    slideRenderers[9] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Анатомия QR-кода 21×21 (Версия 1)</h3>
+          <p class="text-sm text-slate-500">Фиксированные служебные зоны и рабочая область данных</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+          <div class="md:col-span-2 flex justify-center bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <canvas id="qr-anatomy-canvas" width="315" height="315" class="bg-white rounded-xl shadow-sm border border-slate-200 cursor-pointer"></canvas>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <div class="font-bold text-slate-700 mb-1">Фильтры подсветки:</div>
+            <button onclick="highlightQrZone('all')" class="w-full text-left p-2 rounded-lg bg-slate-100 hover:bg-slate-200 font-medium">Показать всё</button>
+            <button onclick="highlightQrZone('finder')" class="w-full text-left p-2 rounded-lg bg-cyan-100 text-cyan-900 font-medium">Поисковые квадраты (Finder)</button>
+            <button onclick="highlightQrZone('timing')" class="w-full text-left p-2 rounded-lg bg-emerald-100 text-emerald-900 font-medium">Полосы синхронизации</button>
+            <button onclick="highlightQrZone('format')" class="w-full text-left p-2 rounded-lg bg-amber-100 text-amber-900 font-medium">Код формата (15 бит)</button>
+            <button onclick="highlightQrZone('dark')" class="w-full text-left p-2 rounded-lg bg-purple-100 text-purple-900 font-medium">Тёмный модуль (Row 13, Col 8)</button>
+            <button onclick="highlightQrZone('payload')" class="w-full text-left p-2 rounded-lg bg-indigo-100 text-indigo-900 font-medium">Данные + Рид — Соломон</button>
+            
+            <div id="qr-hover-info" class="mt-3 p-3 bg-slate-900 text-white rounded-xl font-mono text-[11px]">
+              Наведите мышью на модуль QR
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    slideMounts[9] = () => {
+      const canvas = document.getElementById('qr-anatomy-canvas');
+      const ctx = canvas.getContext('2d');
+      const m = generateHelloWorldMatrix(5);
+      let activeFilter = 'all';
+
+      const drawAnatomy = () => {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const cellSize = 315 / 21;
+
+        for (let r = 0; r < 21; r++) {
+          for (let c = 0; c < 21; c++) {
+            const info = getCellInfo(r, c);
+            let color = m[r][c] === 1 ? '#0f172a' : '#ffffff';
+
+            if (activeFilter === 'finder' && info.zone === 'finder') color = '#06b6d4';
+            else if (activeFilter === 'timing' && info.zone === 'timing') color = '#10b981';
+            else if (activeFilter === 'format' && info.zone === 'format') color = '#f59e0b';
+            else if (activeFilter === 'dark' && info.zone === 'dark') color = '#a855f7';
+            else if (activeFilter === 'payload' && (info.zone === 'data' || info.zone === 'ecc')) color = '#6366f1';
+
+            ctx.fillStyle = color;
+            ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
+          }
+        }
+      };
+
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const c = Math.floor((e.clientX - rect.left) / (rect.width / 21));
+        const r = Math.floor((e.clientY - rect.top) / (rect.height / 21));
+        if (r >= 0 && r < 21 && c >= 0 && c < 21) {
+          const info = getCellInfo(r, c);
+          document.getElementById('qr-hover-info').innerText = `[${r}, ${c}] — ${info.name}`;
+        }
+      });
+
+      window.highlightQrZone = (zone) => {
+        activeFilter = zone;
+        drawAnatomy();
+      };
+
+      drawAnatomy();
+    };
+
+    // --- SLIDE 11: WHY XOR MASK ---
+    slideRenderers[10] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Зачем нужна маска XOR в QR-коде</h3>
+          <p class="text-sm text-slate-500">Устранение больших однотонных пятен и ложных поисковых паттернов</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-center">
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col items-center">
+            <span class="text-xs font-bold text-slate-700 mb-2">1. До маски (Исходник)</span>
+            <canvas id="mask-canv-1" width="160" height="160" class="bg-white rounded border"></canvas>
+          </div>
+
+          <div class="p-3 bg-indigo-50/60 rounded-xl border border-indigo-200 flex flex-col items-center">
+            <span class="text-xs font-bold text-indigo-900 mb-2">2. Шахматка Маски 0</span>
+            <canvas id="mask-canv-2" width="160" height="160" class="bg-white rounded border"></canvas>
+          </div>
+
+          <div class="p-3 bg-slate-900 text-white rounded-xl border border-slate-800 flex flex-col items-center">
+            <span class="text-xs font-bold text-emerald-400 mb-2">3. Готовый QR (XOR)</span>
+            <canvas id="mask-canv-3" width="160" height="160" class="bg-white rounded border"></canvas>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600">
+          Маска инвертирует биты по правилу <code>(row + col) % 2 == 0</code>, разрушая монотонные блоки и делая код сканируемым.
+        </div>
+      </div>
+    `;
+
+    slideMounts[10] = () => {
+      const c1 = document.getElementById('mask-canv-1');
+      const c2 = document.getElementById('mask-canv-2');
+      const c3 = document.getElementById('mask-canv-3');
+
+      const raw = generateHelloWorldMatrix(4); // Unmasked
+      const finalM = generateHelloWorldMatrix(5); // Masked
+
+      const drawSmall = (canvas, getBit) => {
+        const ctx = canvas.getContext('2d');
+        const sz = 160 / 21;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0,0,160,160);
+
+        for(let r=0; r<21; r++) {
+          for(let c=0; c<21; c++) {
+            ctx.fillStyle = getBit(r,c) === 1 ? '#0f172a' : '#ffffff';
+            ctx.fillRect(c*sz, r*sz, sz, sz);
+          }
+        }
+      };
+
+      drawSmall(c1, (r,c) => raw[r][c]);
+      drawSmall(c2, (r,c) => ((r+c)%2===0 ? 1 : 0));
+      drawSmall(c3, (r,c) => finalM[r][c]);
+    };
+
+    // --- SLIDE 12: HELLO WORLD ENCODING ---
+    slideRenderers[11] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Практика №2: Кодирование "HELLO WORLD"</h3>
+          <p class="text-sm text-slate-500">Таблица сжатия пар Alphanumeric и формирование байтов</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+            <h4 class="font-bold text-slate-800">Заголовок потока:</h4>
+            <div class="flex justify-between font-mono bg-white p-2 rounded border">
+              <span>Режим: Alphanumeric</span>
+              <span class="text-indigo-600 font-bold">0010</span>
+            </div>
+            <div class="flex justify-between font-mono bg-white p-2 rounded border">
+              <span>Длина: 11 символов</span>
+              <span class="text-indigo-600 font-bold">000001011</span>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+            <h4 class="font-bold text-slate-800">Таблица пар (45 × V1 + V2):</h4>
+            <div class="grid grid-cols-2 gap-1 font-mono text-[11px]">
+              <div class="bg-white p-1 rounded border">HE: 17*45+14 = 779</div>
+              <div class="bg-white p-1 rounded border">LL: 21*45+21 = 966</div>
+              <div class="bg-white p-1 rounded border">O_: 24*45+36 = 1116</div>
+              <div class="bg-white p-1 rounded border">WO: 32*45+24 = 1464</div>
+              <div class="bg-white p-1 rounded border">RL: 27*45+21 = 1236</div>
+              <div class="bg-white p-1 rounded border">D: 13 = 13 (6 бит)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-900 text-white space-y-2 font-mono text-xs">
+          <div class="text-indigo-400">16 БАЙТОВ ДАННЫХ [32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, ...]:</div>
+          <div class="text-[11px] text-slate-300 break-all leading-relaxed">
+            00100000010110110000101101111000110100010111001011011100010011010100001101000000111011000001000111101100...
+          </div>
+          <div class="text-emerald-400 pt-1">10 БАЙТОВ РИДА — СОЛОМОНА:</div>
+          <div class="text-[11px] text-slate-300">
+            [196, 35, 39, 119, 235, 215, 231, 226, 93, 23]
+          </div>
+        </div>
+      </div>
+    `;
+
+    // ==========================================
+    // SLIDE 13: UPGRADED DRAWING & GENERATION CANVAS
+    // ==========================================
+    slideRenderers[12] = () => `
+      <div class="flex-1 flex flex-col justify-start h-full space-y-3 overflow-hidden">
+        
+        <!-- Header & Info Row -->
+        <div class="flex items-center justify-between shrink-0">
+          <div>
+            <h3 class="text-lg font-bold text-slate-800">Практика №2: Сборка и рисование QR (21×21)</h3>
+            <p class="text-xs text-slate-500">Рисуйте вручную или загружайте пошаговую сборку "HELLO WORLD"</p>
+          </div>
+          <div class="hidden sm:flex items-center space-x-2 text-xs font-mono">
+            <span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-100">V1-M (21×21)</span>
+          </div>
+        </div>
+
+        <!-- Main Workspace Grid: Canvas Left / Sidebar Right -->
+        <div class="flex-1 flex flex-col md:flex-row items-start justify-start gap-4 overflow-y-auto custom-scrollbar p-1">
+          
+          <!-- LEFT COLUMN: Canvas + Rulers + Hover Status Bar -->
+          <div class="flex-1 flex flex-col items-center justify-start space-y-2 w-full max-w-xl">
+            
+            <!-- Canvas with Top/Left Rulers Container -->
+            <div class="relative bg-slate-200 p-2 sm:p-3 rounded-2xl border border-slate-300 shadow-inner flex flex-col items-center">
+              
+              <!-- Top Ruler (0..20) -->
+              <div id="ruler-top" class="flex w-full pl-6 pr-1 pb-1 text-[9px] font-mono text-slate-500 justify-between">
+                <span>0</span><span>4</span><span>8</span><span>12</span><span>16</span><span>20</span>
+              </div>
+
+              <div class="flex items-center w-full">
+                <!-- Left Ruler (0..20) -->
+                <div id="ruler-left" class="flex flex-col h-full pr-1 py-1 text-[9px] font-mono text-slate-500 justify-between select-none">
+                  <span>0</span><span>4</span><span>8</span><span>12</span><span>16</span><span>20</span>
+                </div>
+
+                <!-- Main Crisp 575x575 Drawing Canvas -->
+                <div class="relative bg-white rounded-xl shadow-md overflow-hidden border border-slate-300">
+                  <canvas id="qr-draw-canvas" width="575" height="575" class="w-full h-auto max-h-[52vh] max-w-[500px] cursor-crosshair block"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Bar Below Canvas -->
+            <div class="w-full bg-slate-900 text-white rounded-xl px-4 py-2 flex flex-wrap items-center justify-between text-xs font-mono shadow-sm">
+              <div id="draw-hover-pos" class="text-indigo-400 font-bold">Клетка: [—, —]</div>
+              <div id="draw-hover-zone" class="text-slate-300 truncate max-w-[220px]">Зона: Свободное рисование</div>
+              <div id="draw-count-status" class="text-emerald-400 font-bold">Модулей: 0 / 441</div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN: Sidebar Controls & Step Generation -->
+          <div class="w-full md:w-80 space-y-3 shrink-0">
+            
+            <!-- 1. BRUSHES SECTION -->
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                <span>Инструменты рисования</span>
+                <span class="text-[10px] text-slate-400 font-normal">Мышь / Тач</span>
+              </div>
+              <div class="grid grid-cols-3 gap-1.5 text-xs">
+                <button id="brush-auto" onclick="setBrush('auto')" class="p-2 rounded-lg border font-medium flex flex-col items-center bg-indigo-600 text-white border-indigo-700 shadow-sm transition">
+                  <span class="text-base mb-0.5">🔄</span>
+                  <span>Авто (0↔1)</span>
+                </button>
+                <button id="brush-black" onclick="setBrush('black')" class="p-2 rounded-lg border font-medium flex flex-col items-center bg-white text-slate-700 border-slate-200 hover:bg-slate-100 transition">
+                  <span class="text-base mb-0.5">⬛</span>
+                  <span>Чёрный (1)</span>
+                </button>
+                <button id="brush-white" onclick="setBrush('white')" class="p-2 rounded-lg border font-medium flex flex-col items-center bg-white text-slate-700 border-slate-200 hover:bg-slate-100 transition">
+                  <span class="text-base mb-0.5">⬜</span>
+                  <span>Ластик (0)</span>
+                </button>
+              </div>
+              <div class="flex space-x-2 pt-1">
+                <button onclick="undoDrawStep()" class="flex-1 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center justify-center space-x-1">
+                  <span>↩️ Отменить</span>
+                </button>
+                <button onclick="clearDrawCanvas()" class="flex-1 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-lg text-xs font-medium transition flex items-center justify-center space-x-1">
+                  <span>🗑️ Очистить всё</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. STEP-BY-STEP ASSEMBLY SECTION -->
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Пошаговая сборка HELLO WORLD
+              </div>
+              <div class="space-y-1 text-xs">
+                <button onclick="loadAssemblyStep(1)" class="w-full text-left p-2 rounded-lg bg-white hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 font-medium transition flex items-center justify-between">
+                  <span>Шаг 1: Каркас (Finder + Timing)</span>
+                  <span class="font-mono text-[10px] text-slate-400">1</span>
+                </button>
+                <button onclick="loadAssemblyStep(2)" class="w-full text-left p-2 rounded-lg bg-white hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 font-medium transition flex items-center justify-between">
+                  <span>Шаг 2: + Код формата (15 бит)</span>
+                  <span class="font-mono text-[10px] text-slate-400">2</span>
+                </button>
+                <button onclick="loadAssemblyStep(3)" class="w-full text-left p-2 rounded-lg bg-white hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 font-medium transition flex items-center justify-between">
+                  <span>Шаг 3: + Маршрут «Змейка»</span>
+                  <span class="font-mono text-[10px] text-slate-400">3</span>
+                </button>
+                <button onclick="loadAssemblyStep(4)" class="w-full text-left p-2 rounded-lg bg-white hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 font-medium transition flex items-center justify-between">
+                  <span>Шаг 4: + Данные HELLO WORLD</span>
+                  <span class="font-mono text-[10px] text-slate-400">4</span>
+                </button>
+                <button onclick="loadAssemblyStep(5)" class="w-full text-left p-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition flex items-center justify-between shadow-sm">
+                  <span>Шаг 5: + Маска XOR (Сканируемый!)</span>
+                  <span class="font-mono text-[10px] text-emerald-200">5</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 3. ACTIONS & TOGGLES SECTION -->
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+              <button onclick="applyXorMask0Toggle()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition shadow-sm flex items-center justify-center space-x-1">
+                <span>⊕ Применить / Снять Маску 0 (XOR)</span>
+              </button>
+
+              <div class="space-y-1.5 pt-1">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" id="toggle-stencil" onchange="redrawDrawCanvas()" class="rounded text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-slate-700 font-medium">Трафарет «HELLO WORLD»</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" id="toggle-mask-overlay" onchange="redrawDrawCanvas()" class="rounded text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-slate-700 font-medium">Шахматка Маски 0</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" id="toggle-snake" onchange="redrawDrawCanvas()" class="rounded text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-slate-700 font-medium">Маршрут «Змейка»</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" id="toggle-lock-framework" checked onchange="redrawDrawCanvas()" class="rounded text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-slate-700 font-medium">Заблокировать каркас</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" id="toggle-grid-rulers" checked onchange="toggleGridRulers()" class="rounded text-indigo-600 focus:ring-indigo-500">
+                  <span class="text-slate-700 font-medium">Сетка и координаты</span>
+                </label>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+    // Slide 13 Interactive Mount
+    slideMounts[12] = () => {
+      const canvas = document.getElementById('qr-draw-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      // State variables
+      let userMatrix = Array.from({length: 21}, () => Array(21).fill(0));
+      let currentBrush = 'auto'; // 'auto', 'black', 'white'
+      let isPointerDown = false;
+      let strokeAction = 1; // 1 = paint black, 0 = erase white
+      let undoStack = [];
+
+      // Save undo state
+      const pushUndoState = () => {
+        if (undoStack.length >= 40) undoStack.shift();
+        undoStack.push(userMatrix.map(row => [...row]));
+      };
+
+      window.undoDrawStep = () => {
+        if (undoStack.length > 0) {
+          userMatrix = undoStack.pop();
+          redrawDrawCanvas();
+        }
+      };
+
+      window.clearDrawCanvas = () => {
+        pushUndoState();
+        userMatrix = Array.from({length: 21}, () => Array(21).fill(0));
+        redrawDrawCanvas();
+      };
+
+      window.setBrush = (b) => {
+        currentBrush = b;
+        ['auto', 'black', 'white'].forEach(type => {
+          const btn = document.getElementById(`brush-${type}`);
+          if (type === b) {
+            btn.className = "p-2 rounded-lg border font-medium flex flex-col items-center bg-indigo-600 text-white border-indigo-700 shadow-sm transition";
+          } else {
+            btn.className = "p-2 rounded-lg border font-medium flex flex-col items-center bg-white text-slate-700 border-slate-200 hover:bg-slate-100 transition";
+          }
+        });
+      };
+
+      window.loadAssemblyStep = (step) => {
+        pushUndoState();
+        userMatrix = generateHelloWorldMatrix(step);
+        if (step === 3) {
+          document.getElementById('toggle-snake').checked = true;
+        }
+        redrawDrawCanvas();
+      };
+
+      window.applyXorMask0Toggle = () => {
+        pushUndoState();
+        for (let r = 0; r < 21; r++) {
+          for (let c = 0; c < 21; c++) {
+            if (!isReserved(r, c) && (r + c) % 2 === 0) {
+              userMatrix[r][c] ^= 1;
+            }
+          }
+        }
+        redrawDrawCanvas();
+      };
+
+      window.toggleGridRulers = () => {
+        const checked = document.getElementById('toggle-grid-rulers').checked;
+        document.getElementById('ruler-top').style.visibility = checked ? 'visible' : 'hidden';
+        document.getElementById('ruler-left').style.visibility = checked ? 'visible' : 'hidden';
+        redrawDrawCanvas();
+      };
+
+      // Coordinate converter (575x575 canvas: 23x23 grid of 25px modules, index 1..21 maps to matrix 0..20)
+      const getCellFromEvent = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+
+        const c = Math.floor(x / 25) - 1;
+        const r = Math.floor(y / 25) - 1;
+        return { r, c };
+      };
+
+      const handlePointerDown = (e) => {
+        canvas.setPointerCapture(e.pointerId);
+        isPointerDown = true;
+        pushUndoState();
+
+        const { r, c } = getCellFromEvent(e);
+        if (r >= 0 && r < 21 && c >= 0 && c < 21) {
+          const lockFramework = document.getElementById('toggle-lock-framework').checked;
+          if (lockFramework && isReserved(r, c)) {
+            // Locked
+          } else {
+            if (currentBrush === 'auto') {
+              strokeAction = userMatrix[r][c] === 1 ? 0 : 1;
+            } else if (currentBrush === 'black') {
+              strokeAction = 1;
+            } else {
+              strokeAction = 0;
+            }
+            userMatrix[r][c] = strokeAction;
+            redrawDrawCanvas();
+          }
+        }
+      };
+
+      const handlePointerMove = (e) => {
+        const { r, c } = getCellFromEvent(e);
+        if (r >= 0 && r < 21 && c >= 0 && c < 21) {
+          const info = getCellInfo(r, c);
+          document.getElementById('draw-hover-pos').innerText = `Клетка: [${r}, ${c}]`;
+          document.getElementById('draw-hover-zone').innerText = `Зона: ${info.name}`;
+
+          if (isPointerDown) {
+            const lockFramework = document.getElementById('toggle-lock-framework').checked;
+            if (!lockFramework || !isReserved(r, c)) {
+              if (userMatrix[r][c] !== strokeAction) {
+                userMatrix[r][c] = strokeAction;
+                redrawDrawCanvas();
+              }
+            }
+          }
+        } else {
+          document.getElementById('draw-hover-pos').innerText = `Клетка: [—, —]`;
+          document.getElementById('draw-hover-zone').innerText = `Зона: Свободное рисование`;
+        }
+      };
+
+      const handlePointerUp = (e) => {
+        isPointerDown = false;
+        try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+      };
+
+      canvas.addEventListener('pointerdown', handlePointerDown);
+      canvas.addEventListener('pointermove', handlePointerMove);
+      canvas.addEventListener('pointerup', handlePointerUp);
+      canvas.addEventListener('pointercancel', handlePointerUp);
+
+      // REDRAW ENGINE
+      window.redrawDrawCanvas = () => {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const showGrid = document.getElementById('toggle-grid-rulers').checked;
+        const showStencil = document.getElementById('toggle-stencil').checked;
+        const showMaskOverlay = document.getElementById('toggle-mask-overlay').checked;
+        const showSnake = document.getElementById('toggle-snake').checked;
+
+        const cellSize = 25;
+        const offset = 25; // Quiet zone border of 1 module
+
+        // Count black modules & match
+        let blackCount = 0;
+        let matchCount = 0;
+
+        for (let r = 0; r < 21; r++) {
+          for (let c = 0; c < 21; c++) {
+            const val = userMatrix[r][c];
+            if (val === 1) blackCount++;
+            if (val === TARGET_HELLO_WORLD_MATRIX[r][c]) matchCount++;
+
+            const x = offset + c * cellSize;
+            const y = offset + r * cellSize;
+
+            // Draw module
+            if (val === 1) {
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(x, y, cellSize, cellSize);
+            } else {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(x, y, cellSize, cellSize);
+            }
+
+            // Mask overlay
+            if (showMaskOverlay && !isReserved(r, c) && (r + c) % 2 === 0) {
+              ctx.fillStyle = 'rgba(99, 102, 241, 0.25)';
+              ctx.fillRect(x, y, cellSize, cellSize);
+            }
+
+            // Stencil diff overlay
+            if (showStencil) {
+              const targetVal = TARGET_HELLO_WORLD_MATRIX[r][c];
+              if (targetVal === 1 && val === 0) {
+                // Missing required black cell
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.35)';
+                ctx.fillRect(x + 3, y + 3, cellSize - 6, cellSize - 6);
+              } else if (targetVal === 0 && val === 1) {
+                // Wrong extra black cell
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.5)';
+                ctx.fillRect(x + 4, y + 4, cellSize - 8, cellSize - 8);
+              }
+            }
+
+            // Grid lines
+            if (showGrid) {
+              ctx.strokeStyle = '#e2e8f0';
+              ctx.lineWidth = 1;
+              ctx.strokeRect(x, y, cellSize, cellSize);
+            }
+          }
+        }
+
+        // Snake route overlay line
+        if (showSnake) {
+          ctx.beginPath();
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([3, 3]);
+
+          SKELETON_SNAKE_PATH.forEach((pt, idx) => {
+            const px = offset + pt.c * cellSize + cellSize / 2;
+            const py = offset + pt.r * cellSize + cellSize / 2;
+            if (idx === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          });
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Update status text
+        const total = 441;
+        const pct = ((blackCount / total) * 100).toFixed(1);
+        let statusStr = `Модулей: ${blackCount} / ${total} (${pct}%)`;
+        if (showStencil) {
+          const matchPct = ((matchCount / total) * 100).toFixed(1);
+          statusStr += ` • Точность: ${matchPct}%`;
+        }
+        document.getElementById('draw-count-status').innerText = statusStr;
+      };
+
+      // Initial load step 5 ready code
+      userMatrix = generateHelloWorldMatrix(5);
+      redrawDrawCanvas();
+    };
+
+    // --- SLIDE 14: CRASH TEST & SECURITY (QUISHING) ---
+    slideRenderers[13] = () => `
+      <div class="flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Краш-тест QR-кода и Безопасность (Квишинг)</h3>
+          <p class="text-sm text-slate-500">Кликайте по модулям QR-кода, чтобы повредить их и проверить запас ECC</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+          <div class="md:col-span-2 flex flex-col items-center justify-center bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <canvas id="crash-qr-canvas" width="315" height="315" class="bg-white rounded-xl shadow-sm border border-slate-200 cursor-pointer"></canvas>
+            
+            <div class="flex items-center justify-between w-full max-w-xs font-mono text-xs">
+              <span id="crash-damage-text" class="text-indigo-600 font-bold">Повреждения: 0%</span>
+              <button onclick="resetCrashTest()" class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-300 rounded text-slate-700 font-medium">Сброс</button>
+            </div>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div id="crash-scan-badge" class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold flex items-center space-x-2">
+              <span class="text-xl">✅</span>
+              <span>УСПЕШНО СКАНИРУЕТСЯ (Запас ECC M &le; 15%)</span>
+            </div>
+
+            <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 space-y-2">
+              <h4 class="font-bold text-amber-900 flex items-center space-x-1">
+                <span>🛡️ Что такое Квишинг (Quishing)?</span>
+              </h4>
+              <p class="text-slate-700 text-[11px] leading-relaxed">
+                Фишинг через QR-коды. Злоумышленники наклеивают фейковые стикеры поверх оригинальных кодов на паркоматах и кафе.
+              </p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1 text-[11px] text-slate-600">
+              <div class="font-bold text-slate-800 mb-1">💡 Правила безопасности:</div>
+              <div>1. Проверяйте физические наклейки поверх кодов.</div>
+              <div>2. Проверяйте URL в превью камеры до перехода.</div>
+              <div>3. Не вводите пароли на сайтах из публичных QR.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    slideMounts[13] = () => {
+      const canvas = document.getElementById('crash-qr-canvas');
+      const ctx = canvas.getContext('2d');
+      const origMatrix = generateHelloWorldMatrix(5);
+      let damagedMatrix = origMatrix.map(row => [...row]);
+      let damagedCount = 0;
+
+      const drawCrash = () => {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0,0,315,315);
+        const sz = 315 / 21;
+
+        for (let r=0; r<21; r++) {
+          for (let c=0; c<21; c++) {
+            const isDamaged = damagedMatrix[r][c] === 'X';
+            const val = damagedMatrix[r][c];
+
+            if (isDamaged) {
+              ctx.fillStyle = '#ef4444';
+            } else {
+              ctx.fillStyle = val === 1 ? '#0f172a' : '#ffffff';
+            }
+            ctx.fillRect(c*sz, r*sz, sz, sz);
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.strokeRect(c*sz, r*sz, sz, sz);
+          }
+        }
+
+        const pct = ((damagedCount / 441) * 100).toFixed(1);
+        document.getElementById('crash-damage-text').innerText = `Повреждения: ${pct}%`;
+
+        const badge = document.getElementById('crash-scan-badge');
+        if (pct <= 15.0) {
+          badge.className = "p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold flex items-center space-x-2";
+          badge.innerHTML = `<span class="text-xl">✅</span><span>УСПЕШНО СКАНИРУЕТСЯ (Запас ECC M &le; 15%)</span>`;
+        } else {
+          badge.className = "p-3 rounded-xl bg-red-50 border border-red-200 text-red-900 font-bold flex items-center space-x-2";
+          badge.innerHTML = `<span class="text-xl">❌</span><span>ОШИБКА ЧТЕНИЯ (Переполнение ECC > 15%)</span>`;
+        }
+      };
+
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const c = Math.floor((e.clientX - rect.left) / (rect.width / 21));
+        const r = Math.floor((e.clientY - rect.top) / (rect.height / 21));
+
+        if (r >= 0 && r < 21 && c >= 0 && c < 21) {
+          if (damagedMatrix[r][c] !== 'X') {
+            damagedMatrix[r][c] = 'X';
+            damagedCount++;
+          } else {
+            damagedMatrix[r][c] = origMatrix[r][c];
+            damagedCount--;
+          }
+          drawCrash();
+        }
+      });
+
+      window.resetCrashTest = () => {
+        damagedMatrix = origMatrix.map(row => [...row]);
+        damagedCount = 0;
+        drawCrash();
+      };
+
+      drawCrash();
+    };
+
+  </script>
+</body>
+</html>
